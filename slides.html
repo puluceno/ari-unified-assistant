@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ari: one front door for Ripple Treasury customers</title>
+<style>
+  :root { --ink:#1d2433; --muted:#5b6475; --accent:#2f5bd3; --soft:#eef2fb; --warn:#fff4e0; --warn-ink:#8a5300; --line:#d6dbe6; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:#2b2f38; font-family: "Segoe UI", system-ui, sans-serif; color:var(--ink); }
+  .deck { height:100%; display:flex; align-items:center; justify-content:center; }
+  .slide { width:1280px; height:720px; background:#fff; padding:44px 56px; display:none; flex-direction:column; gap:14px;
+           transform-origin:center; position:relative; }
+  .slide.active { display:flex; }
+  h1 { font-size:34px; margin:0; line-height:1.15; }
+  h2 { font-size:19px; margin:0 0 6px; color:var(--accent); text-transform:uppercase; letter-spacing:.04em; }
+  h3 { font-size:18px; margin:0 0 6px; }
+  p, li { font-size:17px; line-height:1.4; margin:0; }
+  ul { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:5px; }
+  .kicker { font-size:18px; color:var(--muted); margin:0; }
+  .question { font-size:22px; font-weight:600; border-left:5px solid var(--accent); padding:6px 14px; background:var(--soft); }
+  .cols { display:grid; gap:22px; flex:1; min-height:0; }
+  .c2 { grid-template-columns: 1fr 1fr; }
+  .c32 { grid-template-columns: 3fr 2fr; }
+  .c3 { grid-template-columns: 1fr 1fr 1fr; }
+  .small li, .small td { font-size:15px; }
+  .box { border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .box.highlight { background:var(--warn); border-color:#f0c97a; }
+  .box.highlight h3 { color:var(--warn-ink); }
+  table { border-collapse:collapse; width:100%; font-size:16px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; }
+  .strong { font-weight:700; }
+  .flow { display:flex; align-items:stretch; gap:10px; }
+  .node { border:2px solid var(--ink); border-radius:10px; padding:10px 12px; font-size:15px; line-height:1.35; background:#fff; }
+  .node b { display:block; font-size:16px; margin-bottom:4px; }
+  .hub { background:var(--soft); border-color:var(--accent); flex:1.6; }
+  .arrow { align-self:center; font-size:26px; color:var(--muted); }
+  .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:6px; }
+  .step { background:#fff; border:1px solid var(--line); border-radius:6px; padding:5px 7px; font-size:14px; }
+  .step.code { border-color:var(--accent); }
+  .tag { display:inline-block; font-size:12px; padding:1px 6px; border-radius:8px; background:var(--soft); color:var(--accent); margin-left:4px; }
+  .foot { position:absolute; bottom:16px; left:56px; right:56px; display:flex; justify-content:space-between; font-size:13px; color:var(--muted); }
+  @media print {
+    html, body { background:#fff; }
+    .deck { display:block; height:auto; }
+    .slide { display:flex !important; transform:none !important; page-break-after:always; margin:0 auto; }
+    @page { size: 1280px 720px; margin:0; }
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- 1. The problem -->
+<section class="slide">
+  <h2>1 · The problem, as I understand it</h2>
+  <h1>Fragmentation is the symptom</h1>
+  <div class="cols c32">
+    <div>
+      <table>
+        <tr><th>System</th><th>Its rules</th><th>If Ari gets it wrong</th></tr>
+        <tr><td class="strong">Omni (data and analytics)</td><td>Each customer sees only their own companies' data</td><td>If the user notices: they ask for a person or open a ticket, so it ends up with support anyway. If not: a treasurer acts on a wrong number</td></tr>
+        <tr><td class="strong">Help center (Confluence)</td><td>Some pages are for Ripple staff only</td><td>A customer sees an old or internal page</td></tr>
+        <tr><td class="strong">Jira (support)</td><td>Ari creates tickets for the customer</td><td>A ticket the customer never asked for</td></tr>
+      </table>
+      <p style="margin-top:14px">So one chat window needs real work: <b>the same user</b> in every system, <b>routing</b> to the right system, <b>safety checks</b> that every team gets, and <b>one log</b> of every decision. It is not "just plumbing".</p>
+      <p style="margin-top:10px"><b>One entry point: yes.</b> Customers should not need to know which team owns what. <b>One brain: no.</b> My team owns the chat. Each system keeps its own access rules.</p>
+    </div>
+    <div class="box highlight">
+      <h3>The four teams already building</h3>
+      <ul>
+        <li>Nobody in the brief mentions them. This project has the potential to cancel other people's work, and that is the hardest part of shipping it.</li>
+        <li>I have lived this at Microsoft: my team was asked to build something, and a week later we found another team building the same thing.</li>
+        <li>First move: visit each team. What did you build, what worked? Show me your real user questions and logs.</li>
+        <li>Their work is not thrown away: each team becomes the <b>owner of its domain agent</b>. From building a chat window to owning a capability.</li>
+        <li>They don't report to me. So first I'd ask Dana: which senior leader backs this project, and who makes the final decision when teams disagree?</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 2. Push back and questions -->
+<section class="slide">
+  <h2>2 · What I'd push back on, and what I'd ask Dana</h2>
+  <h1>A good start. I believe there are four gaps</h1>
+  <div class="cols c2">
+    <div class="box">
+      <h3>What the brief leaves out</h3>
+      <ul>
+        <li><b>Phase 2 has already started.</b> Creating a ticket changes data. So: Ari offers, the user confirms, then Ari creates it. Later actions use the same pattern.</li>
+        <li><b>"80% ticket deflection"</b> is easy to fake: make tickets hard to create. And bugs and outages always need a ticket.<br>Better main metric: <b>the user says the problem is solved, and does not come back about it within X days</b> (X agreed with the stakeholders). We still count tickets, but we don't target them.</li>
+        <li><b>"Answer anything"</b> must include "I don't know". For finance users, an honest "I don't know" builds more trust than a guess.</li>
+        <li><b>GPT-4o:</b> OK to start with it. The model can be changed by configuration, and tests decide later.</li>
+      </ul>
+    </div>
+    <div class="box small">
+      <h3>Questions for Dana, and what I do with the answer</h3>
+      <table>
+        <tr><td class="strong">What share of last quarter's tickets were "how do I...?" questions?</td><td>Mostly bugs and outages: chat can't prevent those, so 80% is not possible. I make tickets better instead. Mostly "how do I...?": I start with help-center answers</td></tr>
+        <tr><td class="strong">Did customers ask for one chat window? Which customers?</td><td>Ask the product team to get data on it, in the way they see fit: talking to customers, surveys</td></tr>
+        <tr><td class="strong">What happens to the four teams' assistants? Who decides?</td><td>A meeting with the team leads and product: do the teams own their domains and become "our clients" in this project?</td></tr>
+        <tr><td class="strong">Do we know how often Omni gives a wrong number?</td><td>No: we measure it. Ask Omni questions with known answers and count the wrong ones. That decides which Omni questions we show</td></tr>
+        <tr><td class="strong">Can the board demo use test data?</td><td>No: real user permissions become a top priority. That may move the date or change the demo scope</td></tr>
+        <tr><td class="strong">What must the board see in six weeks?</td><td>A demo on test data: possible. Real customers using it: not in six weeks</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 3. Approach -->
+<section class="slide">
+  <h2>3 · Approach</h2>
+  <h1>The model proposes, code decides</h1>
+  <div class="flow">
+    <div class="node"><b>Ari widget</b>inside the product page, so the user is already logged in</div>
+    <div class="arrow">→</div>
+    <div class="node hub"><b>Hub (AI Platform team)</b>
+      <div class="steps">
+        <div class="step">1 Identify the user</div>
+        <div class="step">2 Input guard</div>
+        <div class="step">3 Classify <span class="tag">model</span></div>
+        <div class="step code">4 Decide <span class="tag">code</span></div>
+        <div class="step">5 Compose <span class="tag">model</span></div>
+        <div class="step code">6 Number check <span class="tag">code</span></div>
+      </div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="node"><b>Domain agents (domain teams)</b>Omni · Help center · Forecasting · Onboarding<br>the same contract for all</div>
+  </div>
+  <div class="cols c3 small">
+    <div class="box">
+      <h3>Why this shape</h3>
+      <ul>
+        <li>The model only <b>suggests</b> where the question goes, and writes the answer. <b>Code decides</b> what happens. I can test it without a model.</li>
+        <li>Every domain returns the same thing: data, what was measured, source, time. A new domain does not change the router.</li>
+        <li>A ticket is created only after the user says yes.</li>
+        <li>The model can be changed by configuration.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Who owns what</h3>
+      <ul>
+        <li><b>My team:</b> the chat, login, routing, safety checks, logs, tests.</li>
+        <li><b>Domain teams:</b> correct answers for their area, and their own test questions. They join after passing our tests, for example: "What is my EUR exposure?" returns Omni's exact number; a Globex user never gets Acme's data.</li>
+        <li><b>The team:</b> first see who is already there, and whether people in other teams want to join this effort. Then hire, if we need to.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Weak points</h3>
+      <ul>
+        <li>Assumes a logged-in customer. A public help site would get articles only.</li>
+        <li>Two model calls per answer: slower, and costs more.</li>
+        <li>One system per question, so mixed questions get half an answer.</li>
+        <li>The number check can't see if Omni ran the wrong query.</li>
+        <li>If the hub is down, Ari is down for everyone.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 4. Six weeks + measuring -->
+<section class="slide">
+  <h2>4 · Six weeks to the advisory board, and how I'd know it's working</h2>
+  <h1>Six weeks: show less, but show it working</h1>
+  <p class="kicker">Six weeks is short for a new team. Real safety checks and real testing take time.</p>
+  <div class="cols c2">
+    <div class="box">
+      <h3>What I'd show in six weeks (test data, one product page)</h3>
+      <ul>
+        <li>Help-center answers, with a link to the article.</li>
+        <li>Tickets: Ari offers, the user says yes, the conversation is attached.</li>
+        <li>Omni: about ten common questions (cash, FX exposure). Every number shows its source and time.</li>
+        <li>Shown as a <b>preview</b>: no release date, no actions promised.</li>
+      </ul>
+      <h3 style="margin-top:12px">Not in six weeks</h3>
+      <ul>
+        <li>Real customer data · actions (approve, pay) · forecasting and onboarding · more product pages · "ask anything" · full test automation and monitoring.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>After six weeks</h3>
+      <ul>
+        <li>A test set of real questions from the four teams, with the right answer written down. Enough to cover each type of question a few times.</li>
+        <li>It runs on every change to a prompt or model. Track three things: right system? right number? "I don't know" when it should?</li>
+        <li>Thumbs up / thumbs down on every answer, so users tell us what works.</li>
+        <li>Every decision is logged for our team (users don't see it), so we can see why an answer went wrong.</li>
+      </ul>
+      <h3 style="margin-top:12px">Later in phase 1</h3>
+      <ul>
+        <li>The tests block the release if they fail.</li>
+        <li>A few known questions once a day against a test account, to catch changes in Omni we don't control.</li>
+        <li>A "this is wrong" button that goes to the domain team.</li>
+        <li>A ticket right after an answer = probably a wrong answer.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 5. Worries + demo status -->
+<section class="slide">
+  <h2>5 · What worries me, and where the demo stands</h2>
+  <h1>Users trust what they can check</h1>
+  <div class="cols c2 small">
+    <div class="box">
+      <h3>What worries me</h3>
+      <ul>
+        <li><b>Omni.</b> Highest risk, and nobody can tell me how often it reads a question wrong. A wrong number looks exactly like a right one. So Ari never retypes numbers: if a number is not in Omni's data, Ari shows the raw data. And every number shows what was measured, the source and the time.</li>
+        <li><b>One customer seeing another's data.</b> The model never decides who sees what. Each system checks the user's permissions. In the demo, only the user's company is passed.</li>
+        <li><b>Prompt injection.</b> The model has no power: it only reads, and a ticket needs the user's "yes".</li>
+        <li><b>Six weeks growing into "ask anything".</b> A clear scope for each release, and a prioritised roadmap.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>The demo</h3>
+      <ul>
+        <li>Java 25 + Spring Boot, ~540 lines in 7 files, 7 tests that run without a model. The model call is real (Azure OpenAI). Omni, help center and Jira are mocks. Every answer shows "How Ari decided".</li>
+        <li><b>Not built:</b> real user permissions (the demo trusts the chat app's user header, protected by an API key), word-by-word streaming, questions that need two systems.</li>
+        <li><b>What I found by testing it:</b>
+          <ul>
+            <li>"My EUR exposure looks too low; how do I connect a missing bank account?" needs two systems. Ari picks one: half an answer.</li>
+            <li>"EUR/USD rate at close yesterday?" goes to Omni at 0.67. There is no "not supported" option, and the 0.6 limit is a guess.</li>
+            <li>"What is my EUR exposure?" then "and GBP?": Ari asks what I mean. It only reads the last message.</li>
+          </ul>
+        </li>
+        <li><b>Next two weeks:</b> polish the code; add a new system by configuration, not new code; start the test set of real questions; start real user permissions; handle questions that fit two systems, or none.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</div>
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  let i = 0;
+  slides.forEach((s, n) => s.insertAdjacentHTML('beforeend', `<div class="foot"><span>Ari · Ripple Treasury craft exercise</span><span>${n + 1} / ${slides.length}</span></div>`));
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    history.replaceState(null, '', '#' + (i + 1));
+    fit();
+  }
+  function fit() {
+    const scale = Math.min(innerWidth / 1280, innerHeight / 720) * 0.96;
+    slides[i].style.transform = `scale(${scale})`;
+  }
+  addEventListener('keydown', e => {
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) show(i + 1);
+    if (['ArrowLeft', 'PageUp'].includes(e.key)) show(i - 1);
+  });
+  addEventListener('click', e => show(e.clientX > innerWidth / 2 ? i + 1 : i - 1));
+  addEventListener('resize', fit);
+  show((parseInt(location.hash.slice(1)) || 1) - 1);
+</script>
+</body>
+</html>

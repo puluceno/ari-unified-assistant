@@ -1,0 +1,48 @@
+services:
+  ari-hub:
+    build: .
+    image: ari-hub
+    env_file: .env
+    ports:
+      - "8080:8080"
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:v0.11.4
+    depends_on:
+      - ari-hub
+    ports:
+      - "3000:8080"
+    volumes:
+      - open-webui:/app/backend/data
+    environment:
+      # The hub is the only "model" Open WebUI knows about.
+      OPENAI_API_BASE_URL: http://ari-hub:8080/v1
+      OPENAI_API_KEY: ${HUB_API_KEY:?set HUB_API_KEY in .env}
+      ENABLE_OLLAMA_API: "false"
+      # Tells the hub who is asking (X-OpenWebUI-User-Email).
+      ENABLE_FORWARD_USER_INFO_HEADERS: "true"
+      # Environment wins over anything saved in the UI: the demo always starts the same way.
+      ENABLE_PERSISTENT_CONFIG: "false"
+      WEBUI_NAME: Ari
+      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:?set WEBUI_SECRET_KEY in .env}
+      WEBUI_ADMIN_EMAIL: thiago@ripple.com
+      WEBUI_ADMIN_NAME: Thiago (Ripple)
+      WEBUI_ADMIN_PASSWORD: ${WEBUI_ADMIN_PASSWORD:?set WEBUI_ADMIN_PASSWORD in .env}
+      DEFAULT_USER_ROLE: user
+      DEFAULT_MODELS: ari
+      BYPASS_MODEL_ACCESS_CONTROL: "true"
+      # Background "tasks" would send their own prompts to the hub as if a customer typed them.
+      ENABLE_TITLE_GENERATION: "false"
+      ENABLE_FOLLOW_UP_GENERATION: "false"
+      ENABLE_TAGS_GENERATION: "false"
+      ENABLE_AUTOCOMPLETE_GENERATION: "false"
+      # No model downloads or update checks: starts fast and works on conference wifi.
+      OFFLINE_MODE: "true"
+      DEFAULT_PROMPT_SUGGESTIONS: >-
+        [{"title":["What is my EUR exposure","this month?"],"content":"What is my EUR exposure this month?"},
+        {"title":["Why did my cash forecast","miss in March?"],"content":"Why did my cash forecast miss in March?"},
+        {"title":["How do I set","payment approval limits?"],"content":"How do I set payment approval limits?"},
+        {"title":["What is our liquidity","forecast for Q4?"],"content":"What is our liquidity forecast for Q4?"}]
+
+volumes:
+  open-webui:
